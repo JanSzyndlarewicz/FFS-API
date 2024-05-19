@@ -15,8 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from Server.views import upload_file, get_download_link, get_csrf_token, login_view, logout_view, register_view, \
-    get_user_files
+
+from Server.user_auth import login_view, logout_view, register_view
+from Server.views import upload_file, get_csrf_token, get_user_files, get_download_link
 
 """
 ATTENTION!
@@ -37,6 +38,7 @@ After successful upload you will get JSON response with URL to download the file
 You have to provide file_id in URL. This file_id is the access_token of the file. 
 If the file is password-protected, you will need to provide the password in the headers.
 After successful download you will get the file.
+
 """
 
 
