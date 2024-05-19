@@ -15,7 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from Server.views import upload_file, get_download_link, get_csrf_token
+from Server.views import upload_file, get_download_link, get_csrf_token, login_view, logout_view, register_view, \
+    get_user_files
 
 """
 ATTENTION!
@@ -42,5 +43,9 @@ After successful download you will get the file.
 urlpatterns = [
     path('upload/', upload_file, name='upload_file'),
     path('download/<str:file_id>/', get_download_link, name='download_file'),
-    path('getcsrf/', get_csrf_token, name='get_token')
+    path('getcsrf/', get_csrf_token, name='get_token'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('register/', register_view, name='register'),
+    path('user_files/', get_user_files, name='user_files'),
 ]
