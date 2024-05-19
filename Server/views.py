@@ -4,12 +4,13 @@ import uuid
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.models import UploadedFile
 
 
 @require_http_methods(["GET"])
+@csrf_exempt
 def get_download_link(request, file_id):
     try:
         uploaded_file = UploadedFile.objects.get(access_token=file_id)
@@ -36,8 +37,10 @@ def get_file(file_path: str) -> HttpResponse:
 
 
 @require_http_methods(["POST"])
+@csrf_exempt
 def upload_file(request):
     password = request.headers.get('password', None)
+    print(request.user.is_authenticated)
     user = request.user if request.user.is_authenticated else None
     uploaded_file = UploadedFile.objects.create(file=request.FILES['file'],
                                                 access_token=generate_unique_access_token(),
@@ -60,6 +63,7 @@ def get_csrf_token(request):
 
 
 @require_http_methods(["GET"])
+@csrf_exempt
 def get_user_files(request):
     user = request.user
     if user.is_authenticated:
