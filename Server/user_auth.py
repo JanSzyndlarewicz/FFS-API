@@ -9,8 +9,9 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["POST"])
 @csrf_exempt
 def login_view(request):
-    username = request.headers.get('username', None)
-    password = request.headers.get('password', None)
+    username = request.POST.get('username', None)
+    password = request.POST.get('password', None)
+    print(username, password)
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
@@ -29,8 +30,8 @@ def logout_view(request):
 @require_http_methods(["POST"])
 @csrf_exempt
 def register_view(request):
-    username = request.headers.get('username', None)
-    password = request.headers.get('password', None)
+    username = request.POST.get('username', None)
+    password = request.POST.get('password', None)
     try:
         if User.objects.filter(username=username).exists():
             raise ValidationError('Username already exists')
