@@ -7,6 +7,7 @@ class UploadedFile(models.Model):
     access_token = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255, blank=True, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    file_content = models.BinaryField(null=True)
 
 
 

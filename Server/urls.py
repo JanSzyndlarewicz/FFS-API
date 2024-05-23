@@ -16,8 +16,8 @@ Including another URLconf
 """
 from django.urls import path
 
-from Server.user_auth import login_user, logout_user, register_user, session_info
-from Server.views import upload_file, get_csrf_token, get_all_user_filenames, get_download_link, get_all_user_files
+from Server.auth_views import login_user, logout_user, register_user, session_info
+from Server.views import upload_file, get_csrf_token, get_all_user_filenames, get_all_user_files, get_download_link
 
 """
 ATTENTION!
@@ -44,7 +44,7 @@ After successful download you will get the file.
 
 urlpatterns = [
     path('upload/', upload_file, name='upload_file'),
-    path('download/<str:file_id>/', get_download_link, name='download_file'),
+    path('download/<str:access_token>/', get_download_link, name='download_file'),
     path('getcsrf/', get_csrf_token, name='get_token'),
     path('session_info/', session_info, name='session_info'),
     path('login/', login_user, name='login'),
