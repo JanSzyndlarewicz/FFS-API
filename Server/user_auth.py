@@ -8,28 +8,47 @@ from django.views.decorators.http import require_http_methods
 
 @require_http_methods(["POST"])
 @csrf_exempt
-def login_view(request):
+def login_user(request) -> JsonResponse:
+    """
+    Login view. Authenticates user and logs them in.
+    :param request: request object with username and password in body of the request.
+    :return: JsonResponse with status and session key if successful, error message if not.
+    """
     username = request.POST.get('username', None)
     password = request.POST.get('password', None)
-    print(username, password)
+    print(f'username: {username}, password: {password}')
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return JsonResponse({'status': 'success'})
+
+        session_key = request.session.session_key
+        session_expiry = request.session.get_expiry_date()
+        return JsonResponse({'status': 'success', 'session_key': session_key, 'session_expiry': session_expiry})
     else:
         return JsonResponse({'status': 'error', 'message': 'Invalid username or password'})
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
-def logout_view(request):
+def logout_user(request) -> JsonResponse:
+    """
+    Logout view. Logs out the user.
+    :param request: request object with user to log out.
+    :return: JsonResponse with status.
+    """
     logout(request)
     return JsonResponse({'status': 'success'})
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
-def register_view(request):
+def register_user(request) -> JsonResponse:
+    """
+    Register view. Registers a new user.
+    In the body of the request, the username and password as key-value pairs are expected.
+    :param request: request object with username and password in body of the request.
+    :return: JsonResponse with status and error message if unsuccessful.
+    """
     username = request.POST.get('username', None)
     password = request.POST.get('password', None)
     try:
@@ -42,3 +61,19 @@ def register_view(request):
         return JsonResponse({'status': 'success'})
     except ValidationError as e:
         return JsonResponse({'status': 'error', 'message': str(e)})
+
+
+@require_http_methods(["GET"])
+def session_info(request) -> JsonResponse:
+    """
+    Get session information.
+    Current session key and expiry date are returned if user is authenticated.
+    :param request: request object.
+    :return: JsonResponse with session key and expiry date if user is authenticated, error message if not.
+    """
+    if request.user.is_authenticated:
+        session_key = request.session.session_key
+        session_expiry = request.session.get_expiry_date()
+        return JsonResponse({'status': 'success', 'session_key': session_key, 'session_expiry': session_expiry})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
