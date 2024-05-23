@@ -1,5 +1,4 @@
 # views.py
-import os
 import uuid
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -8,57 +7,48 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.file_operations import create_tarfile_in_memory
 from Server.models import UploadedFile
+from Server.settings import MAX_FILE_SIZE
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
-def get_download_link(request, file_id):
+def get_download_link(request, access_token: str) -> JsonResponse:
+    """
+    Get the download link for the file with the given file_id.
+    :param request: WSGIRequest object containing metadata about the request
+    :param access_token: The access token of the file
+    :return: JsonResponse containing the file content if the file exists, otherwise an error message
+    """
     try:
-        uploaded_file = UploadedFile.objects.get(access_token=file_id)
+        uploaded_file = UploadedFile.objects.get(access_token=access_token)
         if uploaded_file.password:
             password = request.POST.get('password', None)
             if password and password == uploaded_file.password:
-                return get_file(uploaded_file.file.path)
+                return JsonResponse(uploaded_file.file_content, content_type='application/force-download')
             else:
                 return JsonResponse({'error': 'Incorrect password'}, status=401)
         else:
-            return get_file(uploaded_file.file.path)
+            return JsonResponse(uploaded_file.file_content, content_type='application/force-download')
     except UploadedFile.DoesNotExist:
-        return JsonResponse({'error': 'File not found'}, status=404)
-
-
-def get_file(file_path: str) -> HttpResponse:
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as f:
-            response = HttpResponse(f.read(), content_type='application/force-download')
-            response['Content-Disposition'] = 'attachment; filename=' + os.path.basename(file_path)
-            return response
-    else:
         return JsonResponse({'error': 'File not found'}, status=404)
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
 def upload_file(request) -> JsonResponse:
-    """
-    Upload a file to the server. User can add only one file at a time.
-    User can provide a password to protect the file.
-    The password is optional.
-    :param request:
-    :return: JsonResponse that contains the URL to download the file
-    """
     password = request.POST.get('password', None)
-    print(request.user.is_authenticated)
     user = request.user if request.user.is_authenticated else None
     file_obj = request.FILES['file']
+    if file_obj.size > MAX_FILE_SIZE:
+        return JsonResponse({'error': 'File size exceeds 1GB'}, status=400)
+
     file_name = file_obj.name
     access_token = generate_unique_access_token()
+    # Read the file content and save it to the database
+    file_content = file_obj.read()
 
-    with open(f'uploads/{access_token}_{file_name}', 'wb+') as destination:
-        for chunk in file_obj.chunks():
-            destination.write(chunk)
-
-    uploaded_file = UploadedFile.objects.create(file=destination.name,
+    uploaded_file = UploadedFile.objects.create(file=file_name,
+                                                file_content=file_content,
                                                 access_token=access_token,
                                                 password=password,
                                                 user=user)
