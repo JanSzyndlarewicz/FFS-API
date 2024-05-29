@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
-from Server.file_operations import create_tarfile_in_memory, create_tarfile_from_file_contents
+from Server.file_operations import create_tarfile_from_file_contents
 from Server.models import UploadedFile
 from Server.settings import MAX_FILE_SIZE
 
