@@ -1,18 +1,19 @@
 # views.py
 import uuid
-from django.http import HttpResponse
-from django.http import JsonResponse
+from django.http import HttpResponse, FileResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
+from Server.decorators import response_logger
 from Server.file_operations import create_tarfile_from_file_contents
 from Server.models import UploadedFile
 from Server.settings import MAX_FILE_SIZE
 
 
-@require_http_methods(["POST"])
+@require_http_methods(["GET"])
 @csrf_exempt
-def get_download_link(request, access_token: str) -> JsonResponse:
+@response_logger
+def get_download_link(request, access_token: str) -> FileResponse | JsonResponse:
     """
     Get the download link for the file with the given file_id.
     :param request: WSGIRequest object containing metadata about the request
@@ -22,19 +23,22 @@ def get_download_link(request, access_token: str) -> JsonResponse:
     try:
         uploaded_file = UploadedFile.objects.get(access_token=access_token)
         if uploaded_file.password:
-            password = request.POST.get('password', None)
+            password = request.GET.get('password', None)
             if password and password == uploaded_file.password:
-                return JsonResponse(uploaded_file.file_content, content_type='application/force-download')
+                #deserialized_file_content = uploaded_file.file_content.decode('utf-8')
+
+                return JsonResponse(uploaded_file.file_content, safe=False, content_type='application/force-download')
             else:
                 return JsonResponse({'error': 'Incorrect password'}, status=401)
         else:
-            return JsonResponse(uploaded_file.file_content, content_type='application/force-download')
+            return JsonResponse(uploaded_file.file_content, safe=False, content_type='application/force-download')
     except UploadedFile.DoesNotExist:
         return JsonResponse({'error': 'File not found'}, status=404)
 
 
 @require_http_methods(["POST"])
 @csrf_exempt
+@response_logger
 def upload_file(request) -> JsonResponse:
     password = request.POST.get('password', None)
     user = request.user if request.user.is_authenticated else None
@@ -45,6 +49,7 @@ def upload_file(request) -> JsonResponse:
     file_name = file_obj.name
     access_token = generate_unique_access_token()
     # Read the file content and save it to the database
+
     file_content = file_obj.read()
 
     uploaded_file = UploadedFile.objects.create(file=file_name,
@@ -67,6 +72,7 @@ def generate_unique_access_token() -> str:
 
 @require_http_methods(["GET"])
 @ensure_csrf_cookie
+@response_logger
 def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrf_token': csrf_token})
@@ -74,6 +80,7 @@ def get_csrf_token(request):
 
 @require_http_methods(["GET"])
 @csrf_exempt
+@response_logger
 def get_user_filenames(request) -> JsonResponse:
     """
     Get the list of files uploaded by the user.
@@ -91,6 +98,9 @@ def get_user_filenames(request) -> JsonResponse:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
 
 
+@require_http_methods(["GET"])
+@csrf_exempt
+@response_logger
 def get_user_files(request):
     """
     Get the list of files uploaded by the user.

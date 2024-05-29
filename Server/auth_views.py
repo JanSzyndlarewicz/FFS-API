@@ -5,9 +5,12 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from Server.decorators import response_logger
+
 
 @require_http_methods(["POST"])
 @csrf_exempt
+@response_logger
 def login_user(request) -> JsonResponse:
     """
     Login view. Authenticates user and logs them in.
@@ -30,6 +33,7 @@ def login_user(request) -> JsonResponse:
 
 @require_http_methods(["POST"])
 @csrf_exempt
+@response_logger
 def logout_user(request) -> JsonResponse:
     """
     Logout view. Logs out the user.
@@ -42,6 +46,7 @@ def logout_user(request) -> JsonResponse:
 
 @require_http_methods(["POST"])
 @csrf_exempt
+@response_logger
 def register_user(request) -> JsonResponse:
     """
     Register view. Registers a new user.
@@ -64,6 +69,8 @@ def register_user(request) -> JsonResponse:
 
 
 @require_http_methods(["GET"])
+@csrf_exempt
+@response_logger
 def session_info(request) -> JsonResponse:
     """
     Get session information.

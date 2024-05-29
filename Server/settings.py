@@ -9,16 +9,20 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 import logging
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Create a logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Log all messages of severity DEBUG and above
 
 # Create a file handler
-handler = logging.FileHandler('application.log')
+log_file_path = os.path.join(BASE_DIR, 'application.log')
+handler = logging.FileHandler(log_file_path)
 handler.setLevel(logging.DEBUG)  # Write all messages of severity DEBUG and above to the file
 
 # Create a formatter
@@ -32,8 +36,7 @@ logger.addHandler(handler)
 
 MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1 GB
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+
 
 
 # Quick-start development settings - unsuitable for production
