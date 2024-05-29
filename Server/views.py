@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
-from Server.file_operations import create_tarfile_in_memory
+from Server.file_operations import create_tarfile_in_memory, create_tarfile_from_file_contents
 from Server.models import UploadedFile
 from Server.settings import MAX_FILE_SIZE
 
@@ -74,7 +74,7 @@ def get_csrf_token(request):
 
 @require_http_methods(["GET"])
 @csrf_exempt
-def get_all_user_filenames(request) -> JsonResponse:
+def get_user_filenames(request) -> JsonResponse:
     """
     Get the list of files uploaded by the user.
     The JSON response will contain a list of dictionaries with the keys 'url' and 'filename'.
@@ -91,7 +91,7 @@ def get_all_user_filenames(request) -> JsonResponse:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
 
 
-def get_all_user_files(request):
+def get_user_files(request):
     """
     Get the list of files uploaded by the user.
     The JSON response will contain a list of dictionaries with the keys 'url' and 'filename'.
@@ -104,7 +104,7 @@ def get_all_user_files(request):
         files = UploadedFile.objects.filter(user=user)
         if not files:
             return JsonResponse({'error': 'No files uploaded'}, status=404)
-        tar_data = create_tarfile_in_memory([file.file.path for file in files])
+        tar_data = create_tarfile_from_file_contents(files)
         return HttpResponse(tar_data, content_type='application/force-download')
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=401)

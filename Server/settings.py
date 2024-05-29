@@ -11,6 +11,24 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
+import logging
+
+# Create a logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)  # Log all messages of severity DEBUG and above
+
+# Create a file handler
+handler = logging.FileHandler('application.log')
+handler.setLevel(logging.DEBUG)  # Write all messages of severity DEBUG and above to the file
+
+# Create a formatter
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+# Set the formatter for the handler
+handler.setFormatter(formatter)
+
+# Add the handler to the logger
+logger.addHandler(handler)
 
 MAX_FILE_SIZE = 1024 * 1024 * 1024  # 1 GB
 

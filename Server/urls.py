@@ -17,7 +17,7 @@ Including another URLconf
 from django.urls import path
 
 from Server.auth_views import login_user, logout_user, register_user, session_info
-from Server.views import upload_file, get_csrf_token, get_all_user_filenames, get_all_user_files, get_download_link
+from Server.views import upload_file, get_csrf_token, get_user_filenames, get_user_files, get_download_link
 
 """
 ATTENTION!
@@ -50,6 +50,6 @@ urlpatterns = [
     path('login/', login_user, name='login'),
     path('logout/', logout_user, name='logout'),
     path('register/', register_user, name='register'),
-    path('user_filenames/', get_all_user_filenames, name='user_files'),
-    path('user_files/', get_all_user_files, name='user_files')
+    path('user_filenames/', get_user_filenames, name='user_files'),
+    path('user_files/', get_user_files, name='user_files')
 ]
