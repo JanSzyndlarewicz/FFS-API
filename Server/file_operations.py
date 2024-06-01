@@ -1,28 +1,21 @@
 import io
+import os
 import tarfile
-from Server.models import UploadedFile
 
 
-def create_tarfile_from_file_contents(files: list[UploadedFile]) -> io.BytesIO:
+def create_tarfile_in_memory(files: list) -> io.BytesIO:
     """
-    Create a tar file from the contents of the files.
-    :param files: list of UploadedFile objects
-    :return: file-like object containing the tar file
+    Create a tarfile in memory from a list of files.
+    :param files: list of files
+    :return: tar file that contains the files
     """
-    tar_stream = io.BytesIO()
-
-    with tarfile.open(fileobj=tar_stream, mode='w:gz') as tar:
+    tar_data = io.BytesIO()
+    with tarfile.open(fileobj=tar_data, mode='w:gz') as tar:
         for file in files:
-            file_content = file.file_content
-            file_name = file.file.name
-            file_obj = io.BytesIO(file_content)
-
-            # Create a TarInfo object for the file
-            info = tarfile.TarInfo(name=file_name)
-            info.size = len(file_content)
-
-            tar.addfile(info, file_obj)
-
-    tar_stream.seek(0)
-
-    return tar_stream
+            try:
+                if os.path.isfile(file):
+                    tar.add(file, arcname=os.path.basename(file))
+            except FileNotFoundError as e:
+                print(e)
+    tar_data.seek(0)
+    return tar_data
