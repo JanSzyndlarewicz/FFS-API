@@ -1,14 +1,11 @@
 # views.py
-import os
-import uuid
 
 from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
-
 from Server.decorators import response_logger
-from Server.file_operations import create_tarfile_in_memory
+from Server.file_operations import create_tarfile_in_memory, encrypt_file, get_file_from_path
 from Server.models import UploadedFile
 from Server.settings import MAX_FILE_SIZE
 
@@ -26,30 +23,17 @@ def get_download_link(request, access_token: str) -> HttpResponse:
     try:
         uploaded_file = UploadedFile.objects.get(access_token=access_token)
         if uploaded_file.password:
-            password = request.headers.get('password', None)
-            if password and password == uploaded_file.password:
-                file = get_file_from_path(uploaded_file.file.path)
-                return HttpResponse(file.get('file'), content_type='application/force-download')
-            else:
-                return JsonResponse({'error': 'Incorrect password'}, status=401)
-        else:
+            print(uploaded_file.password)
+            print("adsad")
             file = get_file_from_path(uploaded_file.file.path)
-            return HttpResponse(file.get('file'), content_type='application/force-download')
+            encrypted_file = encrypt_file(file, uploaded_file.password)
+            return HttpResponse(encrypted_file, content_type='application/force-download')
+        else:
+            print("test")
+            file = get_file_from_path(uploaded_file.file.path)
+            return HttpResponse(file, content_type='application/force-download')
     except UploadedFile.DoesNotExist:
         return JsonResponse({'error': 'File not found'}, status=404)
-
-
-def get_file_from_path(file_path: str) -> dict:
-    """
-    Get the file content from the given file path.
-    :param file_path:
-    :return:
-    """
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as f:
-            return {'file': f.read().decode('utf-8')}
-    else:
-        return {'error': 'File not found'}
 
 
 @require_http_methods(["POST"])
@@ -76,16 +60,6 @@ def upload_file(request) -> JsonResponse:
                                                 user=user)
 
     return JsonResponse({'url': f'/download/{uploaded_file.access_token}'})
-
-
-def generate_unique_access_token() -> str:
-    """
-    Generate a unique access token for the file.
-    :return: String containing the access token for the file
-    """
-    if UploadedFile.objects.filter(access_token=uuid.uuid4().hex).exists():
-        return generate_unique_access_token()
-    return uuid.uuid4().hex
 
 
 @require_http_methods(["GET"])
