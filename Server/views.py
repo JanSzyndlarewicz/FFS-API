@@ -86,7 +86,7 @@ def get_user_filenames(request) -> JsonResponse:
     if user.is_authenticated:
         files = UploadedFile.objects.filter(user=user)
         return JsonResponse(
-            {'files': [{'url': f'/download/{file.access_token}', 'filename': file.file.name} for file in files]})
+            {'files': [{'file_token': file.access_token, 'filename': file.file.name} for file in files]})
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
 

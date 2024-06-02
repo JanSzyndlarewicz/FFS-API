@@ -65,7 +65,7 @@ def register_user(request) -> JsonResponse:
         user.save()
         return JsonResponse({'status': 'success'})
     except ValidationError as e:
-        return JsonResponse({'status': 'error', 'message': str(e)})
+        return JsonResponse({'status': 'error', 'message': str(e.message)})
 
 
 @require_http_methods(["GET"])
