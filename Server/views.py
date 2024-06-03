@@ -6,7 +6,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.decorators import response_logger
 from Server.file_operations import create_tarfile_in_memory, encrypt_file, get_file_from_path, \
-    generate_unique_access_token, get_original_filename
+    generate_unique_access_token
 from Server.models import UploadedFile
 from Server.settings import MAX_FILE_SIZE
 
