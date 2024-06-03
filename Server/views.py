@@ -4,7 +4,6 @@ from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
-
 from Server.decorators import response_logger
 from Server.file_operations import create_tarfile_in_memory, encrypt_file, get_file_from_path, \
     generate_unique_access_token
@@ -16,7 +15,6 @@ from Server.settings import MAX_FILE_SIZE
 @csrf_exempt
 @response_logger
 def get_file(request, access_token: str) -> HttpResponse:
-    print("Get file")
     """
     Get the download link for the file with the given file_id.
     :param request: WSGIRequest object containing metadata about the request
@@ -26,12 +24,16 @@ def get_file(request, access_token: str) -> HttpResponse:
     try:
         uploaded_file = UploadedFile.objects.get(access_token=access_token)
         if uploaded_file.password:
-            file = get_file_from_path(uploaded_file.file.path)
-            encrypted_file = encrypt_file(file, uploaded_file.password)
-            return HttpResponse(encrypted_file, content_type='application/force-download')
+            path, content = get_file_from_path(uploaded_file.file.path)
+            encrypted_file = encrypt_file(path, content, uploaded_file.password)
+            response = HttpResponse(encrypted_file, content_type='application/force-download')
+            response['Content-Disposition'] = 'attachment; filename=' + path + '.zip'
+            return response
         else:
-            file = get_file_from_path(uploaded_file.file.path)
-            return HttpResponse(file, content_type='application/force-download')
+            path, content = get_file_from_path(uploaded_file.file.path)
+            response = HttpResponse(content, content_type='application/force-download')
+            response['Content-Disposition'] = 'attachment; filename=' + path
+            return response
     except UploadedFile.DoesNotExist:
         return JsonResponse({'error': 'File not found'}, status=404)
 
@@ -40,7 +42,6 @@ def get_file(request, access_token: str) -> HttpResponse:
 @csrf_exempt
 @response_logger
 def upload_file(request) -> JsonResponse:
-    print("Upload file")
     """
     Upload a file to the server.
     :param request: WSGIRequest object containing metadata about the request and the file to upload
@@ -54,7 +55,6 @@ def upload_file(request) -> JsonResponse:
 
     file_content = file_obj.read()
 
-    print(request.FILES['file'])
     uploaded_file = UploadedFile.objects.create(file=request.FILES['file'],
                                                 file_content=file_content,
                                                 access_token=generate_unique_access_token(),
@@ -68,7 +68,6 @@ def upload_file(request) -> JsonResponse:
 @csrf_exempt
 @response_logger
 def delete_file(request, access_token: str):
-    print("Delete file")
     """
     Delete the file with the given file_id.
     :param request: WSGIRequest object containing metadata about the request
@@ -88,13 +87,10 @@ def delete_file(request, access_token: str):
 @response_logger
 def file_view(request, access_token: str = None) -> HttpResponse:
     if request.method == 'GET':
-        print("Get file")
         return get_file(request, access_token)
-    elif request.method == 'POST':
-        print("Upload file")
+    elif request.method == 'POST' and access_token is None:
         return upload_file(request)
     elif request.method == 'DELETE':
-        print("Delete file")
         return delete_file(request, access_token)
     else:
         return JsonResponse({'error': 'Method not allowed'}, status=405)
@@ -144,7 +140,6 @@ def get_user_files(request):
         files = UploadedFile.objects.filter(user=user)
         if not files:
             return JsonResponse({'error': 'No files uploaded'}, status=404)
-        # tar_data = create_tarfile_from_file_contents(files)
         tar_data = create_tarfile_in_memory([file.file.path for file in files])
         return HttpResponse(tar_data, content_type='application/force-download')
     else:

@@ -3,7 +3,6 @@ import os
 import tarfile
 import uuid
 import pyzipper
-
 from Server.models import UploadedFile
 
 
@@ -25,39 +24,24 @@ def create_tarfile_in_memory(files: list) -> io.BytesIO:
     return tar_data
 
 
-def encrypt_file(file, password: str) -> io.BytesIO:
+def encrypt_file(path, content, password: str) -> io.BytesIO:
     encrypted_file = io.BytesIO()
     with pyzipper.AESZipFile(encrypted_file, 'w', compression=pyzipper.ZIP_LZMA, encryption=pyzipper.WZ_AES) as zf:
         zf.pwd = password.encode()
-        zf.writestr(file.name, file.read())
+        zf.writestr(path, content)
     encrypted_file.seek(0)
     return encrypted_file
 
 
-# def get_file_from_path(file_path: str) -> dict:
-#     """
-#     Get the file content from the given file path.
-#     :param file_path:
-#     :return:
-#     """
-#     if os.path.exists(file_path):
-#         with open(file_path, 'rb') as f:
-#             return {'file': f.read().decode('utf-8')}
-#     else:
-#         return {'error': 'File not found'}
-
-def get_file_from_path(file_path: str) -> io.BytesIO | None:
+def get_file_from_path(file_path: str):
     """
     Get the file content from the given file path.
-    :param file_path:
-    :return:
+    :param file_path: Path to the file
+    :return: File object
     """
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
-            file_content = f.read()
-        file = io.BytesIO(file_content)
-        file.name = os.path.basename(file_path)
-        return file
+            return os.path.basename(file_path), f.read()
     else:
         return None
 
