@@ -6,7 +6,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.decorators import response_logger
 from Server.file_operations import create_tarfile_in_memory, encrypt_file, get_file_from_path, \
-    generate_unique_access_token
+    generate_unique_access_token, get_original_filename
 from Server.models import UploadedFile
 from Server.settings import MAX_FILE_SIZE
 
@@ -24,13 +24,10 @@ def get_download_link(request, access_token: str) -> HttpResponse:
     try:
         uploaded_file = UploadedFile.objects.get(access_token=access_token)
         if uploaded_file.password:
-            print(uploaded_file.password)
-            print("adsad")
             file = get_file_from_path(uploaded_file.file.path)
             encrypted_file = encrypt_file(file, uploaded_file.password)
             return HttpResponse(encrypted_file, content_type='application/force-download')
         else:
-            print("test")
             file = get_file_from_path(uploaded_file.file.path)
             return HttpResponse(file, content_type='application/force-download')
     except UploadedFile.DoesNotExist:
@@ -54,6 +51,7 @@ def upload_file(request) -> JsonResponse:
 
     file_content = file_obj.read()
 
+    print(request.FILES['file'])
     uploaded_file = UploadedFile.objects.create(file=request.FILES['file'],
                                                 file_content=file_content,
                                                 access_token=generate_unique_access_token(),
@@ -86,7 +84,7 @@ def get_user_filenames(request) -> JsonResponse:
     if user.is_authenticated:
         files = UploadedFile.objects.filter(user=user)
         return JsonResponse(
-            {'files': [{'file_token': file.access_token, 'filename': file.file.name} for file in files]})
+            {'files': [{'file_token': file.access_token, 'filename': file.get_original_filename()} for file in files]})
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
 

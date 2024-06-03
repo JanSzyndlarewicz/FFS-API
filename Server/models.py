@@ -9,5 +9,6 @@ class UploadedFile(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
     file_content = models.BinaryField(null=True)
 
-
+    def get_original_filename(self):
+        return self.file.name.split('/')[-1]
 
