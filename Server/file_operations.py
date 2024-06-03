@@ -3,7 +3,7 @@ import os
 import tarfile
 import uuid
 import pyzipper
-from Server.models import UploadedFile
+from Server.models import File
 
 
 def create_tarfile_in_memory(files: list) -> io.BytesIO:
@@ -51,6 +51,6 @@ def generate_unique_access_token() -> str:
     Generate a unique access token for the file.
     :return: String containing the access token for the file
     """
-    if UploadedFile.objects.filter(access_token=uuid.uuid4().hex).exists():
+    if File.objects.filter(access_token=uuid.uuid4().hex).exists():
         return generate_unique_access_token()
     return uuid.uuid4().hex

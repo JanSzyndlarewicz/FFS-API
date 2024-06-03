@@ -18,7 +18,7 @@ from django.urls import path
 
 from Server.auth_views import login_user, logout_user, register_user, session_info
 from Server.views import get_csrf_token, get_user_filenames, get_user_files, \
-    file_view
+    file_view, share_view
 
 """
 ATTENTION!
@@ -52,5 +52,8 @@ urlpatterns = [
     path('logout/', logout_user, name='logout'),
     path('register/', register_user, name='register'),
     path('user_filenames/', get_user_filenames, name='user_files'),
-    path('user_files/', get_user_files, name='user_files')
+    path('user_files/', get_user_files, name='user_files'),
+    path('share/<str:access_token>/<str:shared_with>/', share_view, name='create_new_share'),
+    path('share/', share_view, name='get_shared_files'),
+    path('share/<str:access_token>/<str:shared_with>/', share_view, name='delete_share'),
 ]
