@@ -77,8 +77,8 @@ def get_csrf_token(request):
 def get_user_filenames(request) -> JsonResponse:
     """
     Get the list of files uploaded by the user.
-    The JSON response will contain a list of dictionaries with the keys 'url' and 'filename'.
-    Using the 'url' key, the user can download the file.
+    The JSON response will contain a list of dictionaries with the keys 'file_token' and 'filename'.
+    Using the 'file_token' key, the user can reference the file.
     :param request: WSGIRequest object containing metadata about the request
     :return: JsonResponse
     """

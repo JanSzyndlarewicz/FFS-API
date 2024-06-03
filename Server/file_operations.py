@@ -2,7 +2,6 @@ import io
 import os
 import tarfile
 import uuid
-
 import pyzipper
 
 from Server.models import UploadedFile
