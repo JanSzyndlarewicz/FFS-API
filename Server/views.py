@@ -4,6 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.views.decorators.http import require_http_methods
+
 from Server.decorators import response_logger
 from Server.file_operations import create_tarfile_in_memory, encrypt_file, get_file_from_path, \
     generate_unique_access_token
@@ -14,7 +15,8 @@ from Server.settings import MAX_FILE_SIZE
 @require_http_methods(["GET"])
 @csrf_exempt
 @response_logger
-def get_download_link(request, access_token: str) -> HttpResponse:
+def get_file(request, access_token: str) -> HttpResponse:
+    print("Get file")
     """
     Get the download link for the file with the given file_id.
     :param request: WSGIRequest object containing metadata about the request
@@ -38,6 +40,7 @@ def get_download_link(request, access_token: str) -> HttpResponse:
 @csrf_exempt
 @response_logger
 def upload_file(request) -> JsonResponse:
+    print("Upload file")
     """
     Upload a file to the server.
     :param request: WSGIRequest object containing metadata about the request and the file to upload
@@ -58,7 +61,43 @@ def upload_file(request) -> JsonResponse:
                                                 password=password,
                                                 user=user)
 
-    return JsonResponse({'url': f'/download/{uploaded_file.access_token}'})
+    return JsonResponse({'url': f'/file/{uploaded_file.access_token}'})
+
+
+@require_http_methods(["DELETE"])
+@csrf_exempt
+@response_logger
+def delete_file(request, access_token: str):
+    print("Delete file")
+    """
+    Delete the file with the given file_id.
+    :param request: WSGIRequest object containing metadata about the request
+    :param access_token: The access token of the file
+    :return: JsonResponse containing the result of the deletion
+    """
+    try:
+        file = UploadedFile.objects.get(access_token=access_token)
+        file.delete()
+        return JsonResponse({'message': 'File deleted'})
+    except UploadedFile.DoesNotExist:
+        return JsonResponse({'error': 'File not found'}, status=404)
+
+
+@require_http_methods(["GET", "POST", "DELETE"])
+@csrf_exempt
+@response_logger
+def file_view(request, access_token: str = None) -> HttpResponse:
+    if request.method == 'GET':
+        print("Get file")
+        return get_file(request, access_token)
+    elif request.method == 'POST':
+        print("Upload file")
+        return upload_file(request)
+    elif request.method == 'DELETE':
+        print("Delete file")
+        return delete_file(request, access_token)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @require_http_methods(["GET"])
