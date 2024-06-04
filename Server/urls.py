@@ -16,9 +16,10 @@ Including another URLconf
 """
 from django.urls import path
 
-from Server.auth_views import login_user, logout_user, register_user, session_info
-from Server.views import get_csrf_token, get_user_filenames, get_user_files, \
-    file_view, share_view
+from Server.views.auth_views import login_user, logout_user, register_user, session_info
+from Server.views.utils_views import get_csrf_token
+from Server.views.share_views import share_view
+from Server.views.file_views import file_view, get_user_filenames, get_user_files
 
 """
 ATTENTION!

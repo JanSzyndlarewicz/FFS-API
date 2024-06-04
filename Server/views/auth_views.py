@@ -1,3 +1,4 @@
+# auth_views.py
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -12,7 +13,7 @@ from Server.decorators import response_logger
 @response_logger
 def login_user(request) -> JsonResponse:
     """
-    Login view. Authenticates user and logs them in.
+    Login views. Authenticates user and logs them in.
     :param request: request object with username and password in body of the request.
     :return: JsonResponse with status and session key if successful, error message if not.
     """
@@ -35,7 +36,7 @@ def login_user(request) -> JsonResponse:
 @response_logger
 def logout_user(request) -> JsonResponse:
     """
-    Logout view. Logs out the user.
+    Logout views. Logs out the user.
     :param request: request object with user to log out.
     :return: JsonResponse with status.
     """
@@ -48,7 +49,7 @@ def logout_user(request) -> JsonResponse:
 @response_logger
 def register_user(request) -> JsonResponse:
     """
-    Register view. Registers a new user.
+    Register views. Registers a new user.
     In the body of the request, the username and password as key-value pairs are expected.
     :param request: request object with username and password in body of the request.
     :return: JsonResponse with status and error message if unsuccessful.
