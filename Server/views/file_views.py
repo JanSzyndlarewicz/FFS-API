@@ -76,6 +76,7 @@ def delete_file(request: WSGIRequest, access_token: str):
     """
     try:
         file = File.objects.get(access_token=access_token)
+        os.remove(file.file.path)
         file.delete()
         return JsonResponse({'message': 'File deleted'})
     except File.DoesNotExist:
