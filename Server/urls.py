@@ -16,11 +16,12 @@ Including another URLconf
 """
 from django.urls import path
 
+from Server.views import bin_views
 from Server.views.auth_views import login_user, logout_user, register_user, session_info
-from Server.views.bin_views import get_files_in_bin, put_file_in_bin, recover_file
-from Server.views.utils_views import get_csrf_token
-from Server.views.share_views import share_view
+from Server.views.bin_views import recover_file, get_files_in_bin, put_file_in_bin
 from Server.views.file_views import file_view, get_user_filenames, get_user_files
+from Server.views.share_views import share_view
+from Server.views.utils_views import get_csrf_token
 
 """
 ATTENTION!
@@ -48,7 +49,7 @@ After successful download you will get the file.
 urlpatterns = [
     path('file/', file_view, name='file_operations'),
     path('file/<str:access_token>/', file_view, name='file_operations_with_token'),
-    path('file/bin/', get_files_in_bin, name='get_files_in_bin'),
+    path('file/bin/all/', get_files_in_bin, name='get_files_in_bin'),
     path('file/bin/<str:access_token>/', put_file_in_bin, name='put_file_in_bin'),
     path('file/bin/restore/<str:access_token>/', recover_file, name='restore_file_from_bin'),
     path('getcsrf/', get_csrf_token, name='get_csrf_token'),
