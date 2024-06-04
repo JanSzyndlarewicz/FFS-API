@@ -2,12 +2,13 @@
 import os
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.decorators import response_logger
 from Server.file_operations import encrypt_file, get_file_from_path, \
     generate_unique_access_token, create_tarfile_in_memory
-from Server.models import File
+from Server.models import File, Share
 from Server.settings import MAX_FILE_SIZE
 
 
@@ -97,6 +98,39 @@ def delete_file(request: WSGIRequest, access_token: str):
         os.remove(file.file.path)
         file.delete()
         return JsonResponse({'message': 'File deleted'})
+    except File.DoesNotExist:
+        return JsonResponse({'error': 'File not found'}, status=404)
+
+
+@require_http_methods(["PUT"])
+@csrf_exempt
+@response_logger
+def put_file_in_bin(request: WSGIRequest, access_token: str):
+    """
+    Put the file with the given file_id in the bin.
+    :param request: WSGIRequest object containing metadata about the request
+    :param access_token: The access token of the file
+    :return: JsonResponse containing the result of the deletion
+    """
+    try:
+        if request.user.is_authenticated:
+            file = File.objects.get(access_token=access_token)
+            if file.user != request.user:
+                return JsonResponse({'error': 'User not authorized to delete the file'}, status=403)
+
+            if file.deleted_at:
+                return JsonResponse({'error': 'File already in bin'}, status=400)
+
+            shares = Share.objects.filter(file=file)
+            for share in shares:
+                share.delete()
+
+            file.deleted_at = timezone.now()
+            file.save()
+
+            return JsonResponse({'message': 'File deleted'})
+        else:
+            return JsonResponse({'error': 'User not authenticated'}, status=401)
     except File.DoesNotExist:
         return JsonResponse({'error': 'File not found'}, status=404)
 

@@ -19,7 +19,7 @@ from django.urls import path
 from Server.views.auth_views import login_user, logout_user, register_user, session_info
 from Server.views.utils_views import get_csrf_token
 from Server.views.share_views import share_view
-from Server.views.file_views import file_view, get_user_filenames, get_user_files, get_files_in_bin
+from Server.views.file_views import file_view, get_user_filenames, get_user_files, get_files_in_bin, put_file_in_bin
 
 """
 ATTENTION!
@@ -47,7 +47,8 @@ After successful download you will get the file.
 urlpatterns = [
     path('file/', file_view, name='file'),
     path('file/<str:access_token>/', file_view, name='file'),
-    path('file/bin/', get_files_in_bin, name='deleted_files'),
+    path('file/bin/', get_files_in_bin, name='get_deleted_files'),
+    path('file/bin/', put_file_in_bin, name='soft_delete_file'),
     path('getcsrf/', get_csrf_token, name='get_token'),
     path('session_info/', session_info, name='session_info'),
     path('login/', login_user, name='login'),
