@@ -102,6 +102,7 @@ def delete_all_shares_of_file(request: WSGIRequest, access_token: str) -> JsonRe
             shares = Share.objects.filter(file=file)
             for share in shares:
                 share.delete()
+            return JsonResponse({'message': 'Shares deleted successfully'})
         except File.DoesNotExist:
             return JsonResponse({'error': 'File not found'}, status=404)
     else:
