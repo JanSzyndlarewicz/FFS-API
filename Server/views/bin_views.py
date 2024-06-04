@@ -49,7 +49,7 @@ def put_file_in_bin(request: WSGIRequest, access_token: str):
                 return JsonResponse({'error': 'User not authorized to delete the file'}, status=403)
 
             if file.deleted_at:
-                return JsonResponse({'error': 'File already in bin'}, status=400)
+                return JsonResponse({'error': 'File already in trash'}, status=400)
 
             shares = Share.objects.filter(file=file)
             for share in shares:
@@ -58,7 +58,7 @@ def put_file_in_bin(request: WSGIRequest, access_token: str):
             file.deleted_at = timezone.now()
             file.save()
 
-            return JsonResponse({'message': 'File moved to bin'})
+            return JsonResponse({'message': 'File moved to trash'})
         else:
             return JsonResponse({'error': 'User not authenticated'}, status=401)
     except File.DoesNotExist:
