@@ -8,7 +8,6 @@ from Server.models.file_model import File
 from Server.models.share_model import Share
 
 
-
 @require_http_methods(["GET"])
 @csrf_exempt
 @response_logger
@@ -59,7 +58,7 @@ def put_file_in_bin(request: WSGIRequest, access_token: str):
             file.deleted_at = timezone.now()
             file.save()
 
-            return JsonResponse({'message': 'File deleted'})
+            return JsonResponse({'message': 'File moved to bin'})
         else:
             return JsonResponse({'error': 'User not authenticated'}, status=401)
     except File.DoesNotExist:

@@ -16,7 +16,6 @@ Including another URLconf
 """
 from django.urls import path
 
-from Server.views import bin_views
 from Server.views.auth_views import login_user, logout_user, register_user, session_info
 from Server.views.bin_views import recover_file, get_files_in_bin, put_file_in_bin
 from Server.views.file_views import file_view, get_user_filenames, get_user_files
