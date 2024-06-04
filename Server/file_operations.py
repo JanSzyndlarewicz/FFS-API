@@ -5,6 +5,8 @@ import tarfile
 import uuid
 from io import BytesIO
 from time import sleep
+from typing import Tuple
+
 from Server.models import File
 
 
@@ -26,11 +28,15 @@ def create_tarfile_in_memory(files: list) -> io.BytesIO:
     return tar_data
 
 
-def encrypt_file(path, password: str) -> tuple[BytesIO, str | None]:
+def encrypt_file(path, password: str) -> tuple[BytesIO, str] | tuple[None, None]:
     path = zip_file_with_password(path, password)
-    with open(path, 'rb') as f:
-        encrypted_file = io.BytesIO(f.read())
-        return encrypted_file, path
+    try:
+        with open(path, 'rb') as f:
+            encrypted_file = io.BytesIO(f.read())
+            return encrypted_file, path
+    except FileNotFoundError as e:
+        print(e)
+        return None, None
 
 
 def zip_file_with_password(source_path: str, password: str) -> str | None:
@@ -44,7 +50,7 @@ def zip_file_with_password(source_path: str, password: str) -> str | None:
     try:
         subprocess.run(zip_command, check=True)
         while not os.path.exists(zip_filename):
-            sleep(1)
+            sleep(0.1)
         path_to_zipfile = os.path.abspath(zip_filename)
         os.chdir(current_dir)
         return path_to_zipfile
@@ -57,7 +63,7 @@ def get_file_from_path(file_path: str) -> (str, bytes):
     """
     Get the file content from the given file path.
     :param file_path: Path to the file
-    :return: File object
+    :return: Tuple containing the file name as string and the file content in bytes
     """
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:

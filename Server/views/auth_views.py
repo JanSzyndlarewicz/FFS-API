@@ -41,8 +41,10 @@ def logout_user(request: WSGIRequest) -> JsonResponse:
     :param request: request object with user to log out.
     :return: JsonResponse with status.
     """
-    logout(request)
-    return JsonResponse({'status': 'success'})
+    if request.user.is_authenticated:
+        logout(request)
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
 
 
 @require_http_methods(["POST"])

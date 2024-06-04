@@ -8,10 +8,41 @@ from Server.decorators import response_logger
 from Server.models import File, Share
 
 
+@require_http_methods(["GET", "POST", "DELETE"])
+@csrf_exempt
+@response_logger
+def share_view(request: WSGIRequest, access_token: str = None, shared_with: str = None) -> JsonResponse:
+    """
+    View for sharing files. It handles sharing, getting shared files and deleting shares.
+    :param request: WSGIRequest object containing metadata about the request
+    :param access_token: unique access token of the file
+    :param shared_with: username of the user with whom the file is shared
+    :return: JsonResponse
+    """
+    if request.method == 'POST' and access_token is not None and shared_with is not None:
+        return share_file(request, access_token, shared_with)
+    elif request.method == 'GET' and access_token is None and shared_with is None:
+        return get_shared_files(request)
+    elif request.method == 'DELETE' and access_token is not None and shared_with is not None:
+        return delete_share(request, access_token, shared_with)
+    elif request.method == 'DELETE' and access_token is not None and shared_with is None:
+        return delete_all_shares_of_file(request, access_token)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+
 @require_http_methods(["POST"])
 @csrf_exempt
 @response_logger
 def share_file(request: WSGIRequest, access_token: str, username: str) -> JsonResponse:
+    """
+    Share a file with the given access token with the user with the given username.
+    It creates a Share object with the file and the user.
+    :param request: WSGIRequest object containing metadata about the request
+    :param access_token: unique access token of the file
+    :param username: username of the user with whom the file is shared
+    :return: JsonResponse containing the result of the sharing operation
+    """
     if request.user.is_authenticated:
         try:
             file = File.objects.get(access_token=access_token)
@@ -107,19 +138,3 @@ def delete_all_shares_of_file(request: WSGIRequest, access_token: str) -> JsonRe
             return JsonResponse({'error': 'File not found'}, status=404)
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
-
-
-@require_http_methods(["GET", "POST", "DELETE"])
-@csrf_exempt
-@response_logger
-def share_view(request: WSGIRequest, access_token: str = None, shared_with: str = None) -> JsonResponse:
-    if request.method == 'POST' and access_token is not None and shared_with is not None:
-        return share_file(request, access_token, shared_with)
-    elif request.method == 'GET' and access_token is None and shared_with is None:
-        return get_shared_files(request)
-    elif request.method == 'DELETE' and access_token is not None and shared_with is not None:
-        return delete_share(request, access_token, shared_with)
-    elif request.method == 'DELETE' and access_token is not None and shared_with is None:
-        return delete_all_shares_of_file(request, access_token)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)

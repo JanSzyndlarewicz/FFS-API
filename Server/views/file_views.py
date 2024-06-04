@@ -1,6 +1,5 @@
 # file_views.py
 import os
-
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -10,6 +9,26 @@ from Server.file_operations import encrypt_file, get_file_from_path, \
     generate_unique_access_token, create_tarfile_in_memory
 from Server.models import File
 from Server.settings import MAX_FILE_SIZE
+
+
+@require_http_methods(["GET", "POST", "DELETE"])
+@csrf_exempt
+@response_logger
+def file_view(request: WSGIRequest, access_token: str = None) -> HttpResponse:
+    """
+    View for file operations.
+    :param request: WSGIRequest object containing metadata about the request
+    :param access_token: The access token of the file
+    :return: HttpResponse
+    """
+    if request.method == 'GET':
+        return get_file(request, access_token)
+    elif request.method == 'POST' and access_token is None:
+        return upload_file(request)
+    elif request.method == 'DELETE':
+        return delete_file(request, access_token)
+    else:
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
 
 
 @require_http_methods(["GET"])
@@ -29,7 +48,6 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
             encrypted_file, encrypted_file_path = encrypt_file(uploaded_file.file.path, uploaded_file.password)
             response = HttpResponse(encrypted_file, content_type='application/force-download')
             response['Content-Disposition'] = 'attachment; filename=' + path + '.zip'
-            # Delete the encrypted file after it has been sent
             os.remove(encrypted_file_path)
             return response
         else:
@@ -83,20 +101,6 @@ def delete_file(request: WSGIRequest, access_token: str):
         return JsonResponse({'error': 'File not found'}, status=404)
 
 
-@require_http_methods(["GET", "POST", "DELETE"])
-@csrf_exempt
-@response_logger
-def file_view(request: WSGIRequest, access_token: str = None) -> HttpResponse:
-    if request.method == 'GET':
-        return get_file(request, access_token)
-    elif request.method == 'POST' and access_token is None:
-        return upload_file(request)
-    elif request.method == 'DELETE':
-        return delete_file(request, access_token)
-    else:
-        return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-
 @require_http_methods(["GET"])
 @csrf_exempt
 @response_logger
@@ -110,7 +114,26 @@ def get_user_filenames(request: WSGIRequest) -> JsonResponse:
     """
     user = request.user
     if user.is_authenticated:
-        files = File.objects.filter(user=user)
+        files = File.objects.filter(user=user, deleted_at=None)
+        return JsonResponse(
+            {'files': [{'file_token': file.access_token, 'filename': file.get_original_filename()} for file in files]})
+    else:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+
+@require_http_methods(["GET"])
+@csrf_exempt
+@response_logger
+def get_files_in_bin(request: WSGIRequest) -> JsonResponse:
+    """
+    Get the list of files in the bin. Files in bin are those that have been deleted by the user.
+    The JSON response will contain a list of dictionaries with the keys 'file_token' and 'filename'.
+    :param request: WSGIRequest object containing metadata about the request
+    :return: JsonResponse
+    """
+    user = request.user
+    if user.is_authenticated:
+        files = File.objects.filter(user=user, deleted_at__isnull=False)
         return JsonResponse(
             {'files': [{'file_token': file.access_token, 'filename': file.get_original_filename()} for file in files]})
     else:
