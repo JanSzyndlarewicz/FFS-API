@@ -11,7 +11,7 @@ from Server.models import File, Share
 @require_http_methods(["POST"])
 @csrf_exempt
 @response_logger
-def share_file(request: WSGIRequest, access_token: str, username: str):
+def share_file(request: WSGIRequest, access_token: str, username: str) -> JsonResponse:
     if request.user.is_authenticated:
         try:
             file = File.objects.get(access_token=access_token)
@@ -88,7 +88,7 @@ def delete_share(request: WSGIRequest, access_token: str, shared_with: str) -> J
 @require_http_methods(["DELETE"])
 @csrf_exempt
 @response_logger
-def delete_all_shares_of_file(request: WSGIRequest, access_token: str):
+def delete_all_shares_of_file(request: WSGIRequest, access_token: str) -> JsonResponse:
     """
     Delete all shares of a file with the given access token.
     :param request: WSGIRequest object containing metadata about the request

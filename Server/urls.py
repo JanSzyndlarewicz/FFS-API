@@ -55,6 +55,6 @@ urlpatterns = [
     path('user_filenames/', get_user_filenames, name='user_files'),
     path('user_files/', get_user_files, name='user_files'),
     path('share/<str:access_token>/<str:shared_with>/', share_view, name='share'),
+    path('share/<str:access_token>/', share_view, name='make_file_private'),
     path('share/', share_view, name='get_shared_files'),
-    path('share/<str:access_token>/', share_view, name='make_file_private')
 ]

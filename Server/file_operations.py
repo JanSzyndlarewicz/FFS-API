@@ -1,8 +1,10 @@
 import io
 import os
+import subprocess
 import tarfile
 import uuid
-import pyzipper
+from io import BytesIO
+from time import sleep
 from Server.models import File
 
 
@@ -24,16 +26,34 @@ def create_tarfile_in_memory(files: list) -> io.BytesIO:
     return tar_data
 
 
-def encrypt_file(path, content, password: str) -> io.BytesIO:
-    encrypted_file = io.BytesIO()
-    with pyzipper.AESZipFile(encrypted_file, 'w', compression=pyzipper.ZIP_LZMA, encryption=pyzipper.WZ_AES) as zf:
-        zf.pwd = password.encode()
-        zf.writestr(path, content)
-    encrypted_file.seek(0)
-    return encrypted_file
+def encrypt_file(path, password: str) -> tuple[BytesIO, str | None]:
+    path = zip_file_with_password(path, password)
+    with open(path, 'rb') as f:
+        encrypted_file = io.BytesIO(f.read())
+        return encrypted_file, path
 
 
-def get_file_from_path(file_path: str):
+def zip_file_with_password(source_path: str, password: str) -> str | None:
+    zip_filename = os.path.basename(source_path) + '.zip'
+    non_secured_filename = os.path.basename(source_path)
+    current_dir = os.getcwd()
+    os.chdir(os.path.dirname(source_path))
+
+    zip_command = ["zip", "-r", "-P", password, zip_filename, non_secured_filename]
+
+    try:
+        subprocess.run(zip_command, check=True)
+        while not os.path.exists(zip_filename):
+            sleep(1)
+        path_to_zipfile = os.path.abspath(zip_filename)
+        os.chdir(current_dir)
+        return path_to_zipfile
+    except subprocess.CalledProcessError as e:
+        print(e)
+        return None
+
+
+def get_file_from_path(file_path: str) -> (str, bytes):
     """
     Get the file content from the given file path.
     :param file_path: Path to the file

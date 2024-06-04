@@ -2,6 +2,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -11,7 +12,7 @@ from Server.decorators import response_logger
 @require_http_methods(["POST"])
 @csrf_exempt
 @response_logger
-def login_user(request) -> JsonResponse:
+def login_user(request: WSGIRequest) -> JsonResponse:
     """
     Login views. Authenticates user and logs them in.
     :param request: request object with username and password in body of the request.
@@ -34,7 +35,7 @@ def login_user(request) -> JsonResponse:
 @require_http_methods(["POST"])
 @csrf_exempt
 @response_logger
-def logout_user(request) -> JsonResponse:
+def logout_user(request: WSGIRequest) -> JsonResponse:
     """
     Logout views. Logs out the user.
     :param request: request object with user to log out.
@@ -47,7 +48,7 @@ def logout_user(request) -> JsonResponse:
 @require_http_methods(["POST"])
 @csrf_exempt
 @response_logger
-def register_user(request) -> JsonResponse:
+def register_user(request: WSGIRequest) -> JsonResponse:
     """
     Register views. Registers a new user.
     In the body of the request, the username and password as key-value pairs are expected.
@@ -71,7 +72,7 @@ def register_user(request) -> JsonResponse:
 @require_http_methods(["GET"])
 @csrf_exempt
 @response_logger
-def session_info(request) -> JsonResponse:
+def session_info(request: WSGIRequest) -> JsonResponse:
     """
     Get session information.
     Current session key and expiry date are returned if user is authenticated.

@@ -1,4 +1,6 @@
 # file_views.py
+import os
+
 from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -24,9 +26,11 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
         uploaded_file = File.objects.get(access_token=access_token)
         if uploaded_file.password:
             path, content = get_file_from_path(uploaded_file.file.path)
-            encrypted_file = encrypt_file(path, content, uploaded_file.password)
+            encrypted_file, encrypted_file_path = encrypt_file(uploaded_file.file.path, uploaded_file.password)
             response = HttpResponse(encrypted_file, content_type='application/force-download')
             response['Content-Disposition'] = 'attachment; filename=' + path + '.zip'
+            # Delete the encrypted file after it has been sent
+            os.remove(encrypted_file_path)
             return response
         else:
             path, content = get_file_from_path(uploaded_file.file.path)
@@ -40,7 +44,7 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
 @require_http_methods(["POST"])
 @csrf_exempt
 @response_logger
-def upload_file(request) -> JsonResponse:
+def upload_file(request: WSGIRequest) -> JsonResponse:
     """
     Upload a file to the server.
     :param request: WSGIRequest object containing metadata about the request and the file to upload
@@ -63,7 +67,7 @@ def upload_file(request) -> JsonResponse:
 @require_http_methods(["DELETE"])
 @csrf_exempt
 @response_logger
-def delete_file(request, access_token: str):
+def delete_file(request: WSGIRequest, access_token: str):
     """
     Delete the file with the given file_id.
     :param request: WSGIRequest object containing metadata about the request
@@ -81,7 +85,7 @@ def delete_file(request, access_token: str):
 @require_http_methods(["GET", "POST", "DELETE"])
 @csrf_exempt
 @response_logger
-def file_view(request, access_token: str = None) -> HttpResponse:
+def file_view(request: WSGIRequest, access_token: str = None) -> HttpResponse:
     if request.method == 'GET':
         return get_file(request, access_token)
     elif request.method == 'POST' and access_token is None:
@@ -115,7 +119,7 @@ def get_user_filenames(request: WSGIRequest) -> JsonResponse:
 @require_http_methods(["GET"])
 @csrf_exempt
 @response_logger
-def get_user_files(request):
+def get_user_files(request: WSGIRequest) -> HttpResponse:
     """
     Get the list of files uploaded by the user.
     The JSON response will contain a list of dictionaries with the keys 'url' and 'filename'.
