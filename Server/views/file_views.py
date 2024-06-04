@@ -8,7 +8,8 @@ from django.views.decorators.http import require_http_methods
 from Server.decorators import response_logger
 from Server.file_operations import encrypt_file, get_file_from_path, \
     generate_unique_access_token, create_tarfile_in_memory
-from Server.models import File, Share
+from Server.models.file_model import File
+from Server.models.share_model import Share
 from Server.settings import MAX_FILE_SIZE
 
 

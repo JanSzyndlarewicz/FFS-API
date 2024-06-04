@@ -11,10 +11,3 @@ class File(models.Model):
 
     def get_original_filename(self):
         return self.file.name.split('/')[-1]
-
-
-class Share(models.Model):
-    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='shared_files')
-    shared_with = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_files')
-    shared_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shared_files')
-    shared_at = models.DateTimeField(auto_now_add=True)

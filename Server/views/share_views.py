@@ -5,7 +5,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.decorators import response_logger
-from Server.models import File, Share
+from Server.models.file_model import File
+from Server.models.share_model import Share
 
 
 @require_http_methods(["GET", "POST", "DELETE"])
