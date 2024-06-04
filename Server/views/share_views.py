@@ -21,11 +21,11 @@ def share_file(request: WSGIRequest, access_token: str, username: str) -> JsonRe
             if file.user.username == username:
                 return JsonResponse({'error': 'Cannot share file with yourself'}, status=400)
 
-            if Share.objects.filter(file=file, shared_with=User.objects.get(username=username)).exists():
-                return JsonResponse({'error': 'File already shared with the user'}, status=400)
-
             if User.objects.filter(username=username).count() == 0:
                 return JsonResponse({'error': 'User not found'}, status=404)
+
+            if Share.objects.filter(file=file, shared_with=User.objects.get(username=username)).exists():
+                return JsonResponse({'error': 'File already shared with the user'}, status=400)
 
             shared_with = User.objects.get(username=username)
             Share.objects.create(file=file, shared_with=shared_with, shared_by=request.user)
