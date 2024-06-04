@@ -17,9 +17,10 @@ Including another URLconf
 from django.urls import path
 
 from Server.views.auth_views import login_user, logout_user, register_user, session_info
+from Server.views.bin_views import get_files_in_bin, put_file_in_bin
 from Server.views.utils_views import get_csrf_token
 from Server.views.share_views import share_view
-from Server.views.file_views import file_view, get_user_filenames, get_user_files, get_files_in_bin, put_file_in_bin
+from Server.views.file_views import file_view, get_user_filenames, get_user_files
 
 """
 ATTENTION!
