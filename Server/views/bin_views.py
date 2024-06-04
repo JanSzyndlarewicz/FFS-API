@@ -22,6 +22,8 @@ def get_files_in_bin(request: WSGIRequest) -> JsonResponse:
     user = request.user
     if user.is_authenticated:
         files = File.objects.filter(user=user, deleted_at__isnull=False)
+        if not files:
+            return JsonResponse({'files': []})
         return JsonResponse(
             {'files': [{'file_token': file.access_token,
                         'filename': file.get_original_filename(),
