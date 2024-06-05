@@ -6,6 +6,7 @@ import uuid
 from io import BytesIO
 from time import sleep
 from Server.models.file_model import File
+from Server.settings import logger
 
 
 def encrypt_file(path: str, password: str) -> tuple[BytesIO, str] | tuple[None, None]:
@@ -42,6 +43,7 @@ def zip_file_with_password(source_path: str, password: str) -> str | None:
 
     try:
         subprocess.run(zip_command, check=True)
+        logger.debug(f"Zipped file with password: {zip_filename}")
         while not os.path.exists(zip_filename):
             sleep(0.1)
         path_to_zipfile = os.path.abspath(zip_filename)

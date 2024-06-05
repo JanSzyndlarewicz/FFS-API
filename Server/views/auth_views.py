@@ -14,7 +14,8 @@ from Server.decorators import response_logger
 @response_logger
 def login_user(request: WSGIRequest) -> JsonResponse:
     """
-    Login views. Authenticates user and logs them in.
+    Login views. Authenticates user and logs them in. If successful, returns session key.
+    In the body of the request, the username and password as key-value pairs are expected.
     :param request: request object with username and password in body of the request.
     :return: JsonResponse with status and session key if successful, error message if not.
     """
@@ -54,6 +55,8 @@ def register_user(request: WSGIRequest) -> JsonResponse:
     """
     Register views. Registers a new user.
     In the body of the request, the username and password as key-value pairs are expected.
+    Username must be unique and password must be at least 8 characters long.
+    On successful registration, returns status 'success'. On failure, returns status 'error' and error message.
     :param request: request object with username and password in body of the request.
     :return: JsonResponse with status and error message if unsuccessful.
     """
