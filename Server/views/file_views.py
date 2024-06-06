@@ -4,8 +4,8 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from Server.decorators import response_logger
-from Server.file_operations import encrypt_file, get_file_from_path, \
+from Server.utils.decorators import response_logger
+from Server.utils.file_operations import encrypt_file, get_file_from_path, \
     generate_unique_access_token, create_tarfile_in_memory
 from Server.models.file_model import File
 from Server.settings import MAX_FILE_SIZE

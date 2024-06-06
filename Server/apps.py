@@ -8,7 +8,7 @@ class ServerConfig(AppConfig):
     name = 'Server'
 
     def ready(self):
-        from .file_cleaner import main
+        from Server.utils.file_cleaner import main
 
         def start_loop(loop):
             asyncio.set_event_loop(loop)

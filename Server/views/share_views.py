@@ -4,7 +4,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from Server.decorators import response_logger
+from Server.utils.decorators import response_logger
 from Server.models.file_model import File
 from Server.models.share_model import Share
 
