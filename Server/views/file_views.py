@@ -16,7 +16,7 @@ from Server.settings import MAX_FILE_SIZE
 @response_logger
 def file_view(request: WSGIRequest, access_token: str = None) -> HttpResponse:
     """
-    View for file operations.
+    View for file operations. The operations supported are GET, POST, and DELETE.
     :param request: WSGIRequest object containing metadata about the request
     :param access_token: The access token of the file
     :return: HttpResponse
@@ -36,7 +36,7 @@ def file_view(request: WSGIRequest, access_token: str = None) -> HttpResponse:
 @response_logger
 def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
     """
-    Get the download link for the file with the given file_id.
+    Get the download link for the file with the given file_id. The file is downloaded if it exists.
     :param request: WSGIRequest object containing metadata about the request
     :param access_token: The access token of the file
     :return: JsonResponse containing the file content if the file exists, otherwise an error message
@@ -45,6 +45,7 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
         uploaded_file = File.objects.get(access_token=access_token)
         if uploaded_file.deleted_at:
             return JsonResponse({'error': 'File has been removed'}, status=404)
+
         if uploaded_file.password:
             path, content = get_file_from_path(uploaded_file.file.path)
             encrypted_file, encrypted_file_path = encrypt_file(uploaded_file.file.path, uploaded_file.password)
@@ -57,6 +58,7 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
             response = HttpResponse(content, content_type='application/force-download')
             response['Content-Disposition'] = 'attachment; filename=' + path
             return response
+
     except File.DoesNotExist:
         return JsonResponse({'error': 'File not found'}, status=404)
 
@@ -66,7 +68,7 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
 @response_logger
 def upload_file(request: WSGIRequest) -> JsonResponse:
     """
-    Upload a file to the server.
+    Upload a file to the server. The file is stored in the 'file' key of the request.
     :param request: WSGIRequest object containing metadata about the request and the file to upload
     :return: JsonResponse containing the URL to download the file
     """
@@ -75,6 +77,7 @@ def upload_file(request: WSGIRequest) -> JsonResponse:
     file_obj = request.FILES['file']
     if file_obj.size > MAX_FILE_SIZE:
         return JsonResponse({'error': 'File size exceeds 1GB'}, status=400)
+
     uploaded_file = File.objects.create(file=request.FILES['file'],
                                         access_token=generate_unique_access_token(),
                                         password=password,
@@ -86,9 +89,9 @@ def upload_file(request: WSGIRequest) -> JsonResponse:
 @require_http_methods(["DELETE"])
 @csrf_exempt
 @response_logger
-def delete_file(request: WSGIRequest, access_token: str):
+def delete_file(request: WSGIRequest, access_token: str) -> JsonResponse:
     """
-    Delete the file with the given file_id.
+    Delete the file with the given file_id. The file is permanently deleted.
     :param request: WSGIRequest object containing metadata about the request
     :param access_token: The access token of the file
     :return: JsonResponse containing the result of the deletion
@@ -116,7 +119,6 @@ def get_user_filenames(request: WSGIRequest) -> JsonResponse:
     user = request.user
     if user.is_authenticated:
         files = File.objects.filter(user=user, deleted_at=None)
-        # try to get the files from the user
         response = []
         for file in files:
             try:

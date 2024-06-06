@@ -21,7 +21,7 @@ async def delete_expired_files(expiration_days: int = 30) -> None:
 
 def delete_files_not_connected_to_db() -> None:
     """
-    Find files that are not connected to the database.
+    Find files that are not connected to the database. Delete them.
     :return: None
     """
     logger.info("Finding files not connected to the database")
@@ -33,7 +33,7 @@ def delete_files_not_connected_to_db() -> None:
 
 def delete_files_not_in_uploads_folder() -> None:
     """
-    Find files that are not in the uploads folder.
+    Find files that are not in the uploads folder. Delete them.
     :return: None
     """
     logger.info("Finding files not in the uploads folder")

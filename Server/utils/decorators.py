@@ -3,7 +3,13 @@ import traceback
 from Server.settings import logger
 
 
-def response_logger(func):
+def response_logger(func: callable) -> callable:
+    """
+    Decorator to log the response time of a function.
+    It logs the function name, arguments, return value and the time taken to execute the function.
+    :param func: function to be decorated
+    :return: decorated function
+    """
     def wrapper(*args, **kwargs):
         start_time = time.time()
         try:

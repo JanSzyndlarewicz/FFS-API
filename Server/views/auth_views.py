@@ -15,7 +15,7 @@ from Server.settings import logger
 @response_logger
 def login_user(request: WSGIRequest) -> JsonResponse:
     """
-    Login views. Authenticates user and logs them in. If successful, returns session key.
+    Authenticates user and logs them in. If successful, returns session key.
     In the body of the request, the username and password as key-value pairs are expected.
     :param request: request object with username and password in body of the request.
     :return: JsonResponse with status and session key if successful, error message if not.

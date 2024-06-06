@@ -76,6 +76,7 @@ def get_shared_files(request: WSGIRequest) -> JsonResponse:
     Get the list of files shared with the user.
     The JSON response will contain a list of dictionaries with the keys 'file_token' and 'filename'.
     Using the 'file_token' key, the user can reference the file.
+    User must be authenticated to access this view. If not, it returns an error.
     :param request: WSGIRequest object containing metadata about the request
     :return: JsonResponse containing the list of shared files
     """
@@ -98,6 +99,7 @@ def delete_share(request: WSGIRequest, access_token: str, shared_with: str) -> J
     Delete the share with the given access token and shared_with user.
     Access token is the file access token and shared_with is the username
     of the user with whom the file is shared.
+    User must be authenticated to access this view. If not, it returns an error.
     :param request: WSGIRequest object containing metadata about the request
     :param access_token: unique access token of the file
     :param shared_with: username of the user with whom the file is shared
@@ -123,6 +125,8 @@ def delete_share(request: WSGIRequest, access_token: str, shared_with: str) -> J
 def delete_all_shares_of_file(request: WSGIRequest, access_token: str) -> JsonResponse:
     """
     Delete all shares of a file with the given access token.
+    Access token is the file access token.
+    User must be authenticated to access this view. If not, it returns an error.
     :param request: WSGIRequest object containing metadata about the request
     :param access_token: unique access token of the file
     """

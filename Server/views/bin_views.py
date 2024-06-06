@@ -35,7 +35,7 @@ def get_files_in_bin(request: WSGIRequest) -> JsonResponse:
 @require_http_methods(["PUT"])
 @csrf_exempt
 @response_logger
-def put_file_in_bin(request: WSGIRequest, access_token: str):
+def put_file_in_bin(request: WSGIRequest, access_token: str) -> JsonResponse:
     """
     Put the file with the given file_id in the bin.
     :param request: WSGIRequest object containing metadata about the request
