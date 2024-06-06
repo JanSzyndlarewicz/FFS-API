@@ -82,12 +82,12 @@ def recover_file(request: WSGIRequest, access_token: str):
                 return JsonResponse({'error': 'User not authorized to recover the file'}, status=403)
 
             if not file.deleted_at:
-                return JsonResponse({'error': 'File not in bin'}, status=400)
+                return JsonResponse({'error': 'File not in trash'}, status=400)
 
             file.deleted_at = None
             file.save()
 
-            return JsonResponse({'message': 'File recovered'})
+            return JsonResponse({'message': 'File restored'})
         else:
             return JsonResponse({'error': 'User not authenticated'}, status=401)
     except File.DoesNotExist:

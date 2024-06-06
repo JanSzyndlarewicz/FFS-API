@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from Server.decorators import response_logger
+from Server.settings import logger
 
 
 @require_http_methods(["POST"])
@@ -21,11 +22,10 @@ def login_user(request: WSGIRequest) -> JsonResponse:
     """
     username = request.POST.get('username', None)
     password = request.POST.get('password', None)
-    print(f'username: {username}, password: {password}')
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-
+        logger.info(f'User {username} logged in')
         session_key = request.session.session_key
         session_expiry = request.session.get_expiry_date()
         return JsonResponse({'status': 'success', 'session_key': session_key, 'session_expiry': session_expiry})
@@ -44,6 +44,7 @@ def logout_user(request: WSGIRequest) -> JsonResponse:
     """
     if request.user.is_authenticated:
         logout(request)
+        logger.info(f'User {request.user.username} logged out')
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'User not authenticated'})
 

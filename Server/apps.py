@@ -1,6 +1,5 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-
 from django.apps import AppConfig
 
 
@@ -9,7 +8,7 @@ class ServerConfig(AppConfig):
     name = 'Server'
 
     def ready(self):
-        from .delete_expired_files import main
+        from .file_cleaner import main
 
         def start_loop(loop):
             asyncio.set_event_loop(loop)

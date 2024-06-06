@@ -43,6 +43,8 @@ def get_file(request: WSGIRequest, access_token: str) -> HttpResponse:
     """
     try:
         uploaded_file = File.objects.get(access_token=access_token)
+        if uploaded_file.deleted_at:
+            return JsonResponse({'error': 'File has been removed'}, status=404)
         if uploaded_file.password:
             path, content = get_file_from_path(uploaded_file.file.path)
             encrypted_file, encrypted_file_path = encrypt_file(uploaded_file.file.path, uploaded_file.password)
@@ -68,12 +70,11 @@ def upload_file(request: WSGIRequest) -> JsonResponse:
     :param request: WSGIRequest object containing metadata about the request and the file to upload
     :return: JsonResponse containing the URL to download the file
     """
-    password = request.POST.get('password', None)
+    password = request.headers.get('password', None)
     user = request.user if request.user.is_authenticated else None
     file_obj = request.FILES['file']
     if file_obj.size > MAX_FILE_SIZE:
         return JsonResponse({'error': 'File size exceeds 1GB'}, status=400)
-
     uploaded_file = File.objects.create(file=request.FILES['file'],
                                         access_token=generate_unique_access_token(),
                                         password=password,
@@ -115,11 +116,14 @@ def get_user_filenames(request: WSGIRequest) -> JsonResponse:
     user = request.user
     if user.is_authenticated:
         files = File.objects.filter(user=user, deleted_at=None)
-        return JsonResponse(
-            {'files': [{'file_token': file.access_token,
-                        'filename': file.get_original_filename(),
-                        'file_size': file.file.size}
-                       for file in files]})
+        # try to get the files from the user
+        response = []
+        for file in files:
+            try:
+                response.append({'file_token': file.access_token, 'filename': file.get_original_filename()})
+            except FileNotFoundError:
+                file.delete()
+        return JsonResponse({'files': response})
     else:
         return JsonResponse({'error': 'User not authenticated'}, status=401)
 
