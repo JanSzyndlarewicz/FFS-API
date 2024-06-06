@@ -48,7 +48,7 @@ To run the FastFileStore server locally, follow these steps:
 ## About
 FastFileStore is designed to provide a fast and efficient way to store and manage files. The application is divided into two main parts: the backend server and the GUI app.
 
-I took the lead on developing the backend server. The server is built with Python and uses Django for the web framework and [SQLite](https://sqlite.org/) for the database. It provides a robust API for managing files, including operations like uploading, downloading, and deleting files. The server also includes features like file encryption and access control for added security.
+I took the lead on developing the backend server. The server is built with Python and uses Django for the web framework and [SQLite](https://sqlite.org/) for the database. It provides a robust API for managing files, including operations like uploading, downloading, and deleting files. The server also includes features like file encryption and access control for added security. Logging is also available and enabled by default; information about server events will be outputted to Server/application.log file.
 
 ## Contact
 If you have any questions or feedback, feel free to reach out:
