@@ -39,7 +39,6 @@ def zip_file_with_password(source_path: str, password: str) -> str | None:
     current_dir = os.getcwd()
     os.chdir(os.path.dirname(source_path))
 
-    #zip_command = ["zip", "-r", "-P", password, zip_filename, non_secured_filename]
     zip_command = ["7z", "a", f"-p{password}", zip_filename, non_secured_filename]
 
     try:

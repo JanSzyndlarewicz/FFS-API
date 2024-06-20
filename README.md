@@ -31,20 +31,30 @@ To run the FastFileStore server locally, follow these steps:
    ```python
    ALLOWED_HOSTS = ['192.168.0.100']
    ```
-6. **Create the database migrations**
+5. **Create the database migrations**
    ```bash
    python ./manage.py makemigrations Server
    ```
-5. **Apply the migrations:**
+6. **Apply the migrations:**
    ```bash
    python ./manage.py migrate
    ```
-5. **Start the app with the correct IP and port:**  
+7. **Start the app with the correct IP and port:**  
    *example:*
    ```bash
    python ./manage.py runserver 192.168.0.100:8000
    ```
    
+## Dockerization
+1. **Build and run the Docker container:**
+   ```bash
+    docker build -t <container_name> .
+    ```
+2. **Run the container:**
+    ```bash
+    docker run -p <host_port>:8000 <container_name>
+   ```   
+
 ## About
 FastFileStore is designed to provide a fast and efficient way to store and manage files. The application is divided into two main parts: the backend server and the GUI app.
 
