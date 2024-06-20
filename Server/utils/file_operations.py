@@ -42,7 +42,7 @@ def zip_file_with_password(source_path: str, password: str) -> str | None:
     zip_command = ["7z", "a", f"-p{password}", zip_filename, non_secured_filename]
 
     try:
-        subprocess.run(zip_command, check=True, shell=True, cwd=os.path.dirname(source_path))
+        subprocess.run(zip_command, check=True, cwd=os.path.dirname(source_path))
         logger.debug(f"Zipped file with password: {zip_filename}")
         while not os.path.exists(zip_filename):
             sleep(0.1)

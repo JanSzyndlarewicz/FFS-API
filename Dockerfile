@@ -10,7 +10,8 @@ RUN apt-get update && \
     build-essential \
     default-libmysqlclient-dev \
     gcc \
-    pkg-config && \
+    pkg-config \
+    p7zip-full && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy requirements.txt to the working directory
